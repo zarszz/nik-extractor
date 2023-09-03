@@ -202,6 +202,10 @@ func (p UserUseCase) FindUserByGender(gender string) ([]domain.User, error) {
 }
 
 func (p UserUseCase) FindUserByDistrictId(districtId string) ([]domain.User, error) {
+	_, err := p.districtRepo.FindById(districtId)
+	if err != nil {
+		return nil, err
+	}
 	users, err := p.repo.FindUserByDistrictId(districtId)
 	if err != nil {
 		return nil, err
@@ -267,6 +271,10 @@ func (p UserUseCase) FindById(id string) (domain.User, error) {
 }
 
 func (p UserUseCase) FindUserByProvinceId(provinceId string) ([]domain.User, error) {
+	_, err := p.provinceRepo.FindById(provinceId)
+	if err != nil {
+		return nil, err
+	}
 	users, err := p.repo.FindUserByProvinceId(provinceId)
 	if err != nil {
 		return nil, err

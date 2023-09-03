@@ -44,6 +44,7 @@ func (p *UserHandler) Submit(c *gin.Context) {
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			view2.MakeResponse(c, 404, "Not Found", []domain.User{})
+			return
 		}
 		view2.MakeResponse(c, 500, "Internal Server Error", []domain.User{})
 		return
@@ -58,7 +59,8 @@ func (p *UserHandler) FindByProvinceId(c *gin.Context) {
 	users, err := p.userUseCase.FindUserByProvinceId(provinceId)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			view2.MakeResponse(c, 404, "Not Found", []domain.User{})
+			view2.MakeResponse(c, 404, "province not found", []domain.User{})
+			return
 		}
 		view2.MakeResponse(c, 500, "Internal Server Error", []domain.User{})
 		return
@@ -73,7 +75,8 @@ func (p *UserHandler) FindByCityId(c *gin.Context) {
 	users, err := p.userUseCase.FindUserByCityId(cityId)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			view2.MakeResponse(c, 404, "Not Found", []domain.User{})
+			view2.MakeResponse(c, 404, "city not found", []domain.User{})
+			return
 		}
 		view2.MakeResponse(c, 500, "Internal Server Error", []domain.User{})
 		return
@@ -88,7 +91,8 @@ func (p *UserHandler) FindByDistrictId(c *gin.Context) {
 	users, err := p.userUseCase.FindUserByDistrictId(districtId)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			view2.MakeResponse(c, 404, "Not Found", []domain.User{})
+			view2.MakeResponse(c, 404, "district not found", []domain.User{})
+			return
 		}
 		view2.MakeResponse(c, 500, "Internal Server Error", []domain.User{})
 		return
@@ -103,6 +107,7 @@ func (p *UserHandler) FindByYearOfBirth(c *gin.Context) {
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			view2.MakeResponse(c, 404, "Not Found", []domain.User{})
+			return
 		}
 		view2.MakeResponse(c, 500, err.Error(), []domain.User{})
 		return
@@ -118,6 +123,7 @@ func (p *UserHandler) FindByGender(c *gin.Context) {
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			view2.MakeResponse(c, 404, "Not Found", []domain.User{})
+			return
 		}
 		view2.MakeResponse(c, 500, err.Error(), []domain.User{})
 		return
