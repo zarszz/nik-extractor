@@ -22,15 +22,15 @@ func (p UserUseCase) CleanUp() error {
 	return p.repo.CleanUp()
 }
 
-func (p UserUseCase) Validate(validateUserDataView []view.ValidateUserDataView) (bool, []view.ValidateUserDataErrorView) {
-	var errorViews []view.ValidateUserDataErrorView
+func (p UserUseCase) Validate(validateUserDataView []view.ValidateUserDataViewResponse) (bool, []view.ValidateUserDataErrorViewResponse) {
+	var errorViews []view.ValidateUserDataErrorViewResponse
 
 	for _, data := range validateUserDataView {
 		var mismatchedData []string
 		extractedMetaData, err := p.Extract(data.Id)
 		if err != nil {
 			if len(err) != 0 {
-				errorViews = append(errorViews, view.ValidateUserDataErrorView{
+				errorViews = append(errorViews, view.ValidateUserDataErrorViewResponse{
 					Id:     data.Id,
 					Errors: err,
 				})
@@ -59,7 +59,7 @@ func (p UserUseCase) Validate(validateUserDataView []view.ValidateUserDataView) 
 		}
 
 		if len(mismatchedData) > 0 {
-			errorViews = append(errorViews, view.ValidateUserDataErrorView{
+			errorViews = append(errorViews, view.ValidateUserDataErrorViewResponse{
 				Id:     data.Id,
 				Errors: mismatchedData,
 			})

@@ -34,7 +34,7 @@ func (p *UserHandler) Submit(c *gin.Context) {
 	var submitUserView []view.SubmitUserView
 
 	if err := c.ShouldBindJSON(&submitUserView); err != nil {
-		view2.MakeResponse(c, 400, "Internal Server Error", gin.H{
+		view2.MakeResponse(c, 400, err.Error(), gin.H{
 			"error": err.Error(),
 		})
 		return
@@ -51,7 +51,7 @@ func (p *UserHandler) Submit(c *gin.Context) {
 			view2.MakeResponse(c, 400, "Id already used", []domain.User{})
 			return
 		}
-		view2.MakeResponse(c, 500, "Internal Server Error", []domain.User{})
+		view2.MakeResponse(c, 400, err.Error(), []domain.User{})
 		return
 	}
 
@@ -67,7 +67,7 @@ func (p *UserHandler) FindByProvinceId(c *gin.Context) {
 			view2.MakeResponse(c, 404, "province not found", []domain.User{})
 			return
 		}
-		view2.MakeResponse(c, 500, "Internal Server Error", []domain.User{})
+		view2.MakeResponse(c, 400, err.Error(), []domain.User{})
 		return
 	}
 
@@ -83,7 +83,7 @@ func (p *UserHandler) FindByCityId(c *gin.Context) {
 			view2.MakeResponse(c, 404, "city not found", []domain.User{})
 			return
 		}
-		view2.MakeResponse(c, 500, "Internal Server Error", []domain.User{})
+		view2.MakeResponse(c, 400, err.Error(), []domain.User{})
 		return
 	}
 
@@ -99,7 +99,7 @@ func (p *UserHandler) FindByDistrictId(c *gin.Context) {
 			view2.MakeResponse(c, 404, "district not found", []domain.User{})
 			return
 		}
-		view2.MakeResponse(c, 500, "Internal Server Error", []domain.User{})
+		view2.MakeResponse(c, 400, err.Error(), []domain.User{})
 		return
 	}
 	view2.MakeResponse(c, 200, "Success", users)
@@ -114,7 +114,7 @@ func (p *UserHandler) FindByYearOfBirth(c *gin.Context) {
 			view2.MakeResponse(c, 404, "Not Found", []domain.User{})
 			return
 		}
-		view2.MakeResponse(c, 500, err.Error(), []domain.User{})
+		view2.MakeResponse(c, 400, err.Error(), []domain.User{})
 		return
 	}
 
@@ -130,7 +130,7 @@ func (p *UserHandler) FindByGender(c *gin.Context) {
 			view2.MakeResponse(c, 404, "Not Found", []domain.User{})
 			return
 		}
-		view2.MakeResponse(c, 500, err.Error(), []domain.User{})
+		view2.MakeResponse(c, 400, err.Error(), []domain.User{})
 		return
 	}
 
@@ -148,7 +148,7 @@ func (p *UserHandler) Extract(context *gin.Context) {
 }
 
 func (p *UserHandler) Validate(context *gin.Context) {
-	var validateUserDataView []view.ValidateUserDataView
+	var validateUserDataView []view.ValidateUserDataViewResponse
 
 	if err := context.ShouldBindJSON(&validateUserDataView); err != nil {
 		view2.MakeResponse(context, 400, "Bad Request", gin.H{
