@@ -11,7 +11,7 @@ type User struct {
 }
 
 type UserRepository interface {
-	FindById(id string) (User, error)
+	FindById(id string) (*User, error)
 	FindUserByProvinceId(provinceId string) ([]User, error)
 	FindUserByCityId(cityId string) ([]User, error)
 	FindUserByDistrictId(districtId string) ([]User, error)
@@ -23,7 +23,7 @@ type UserRepository interface {
 }
 
 type UserUseCase interface {
-	FindById(id string) (User, error)
+	FindById(id string) (*User, error)
 	FindUserByProvinceId(provinceId string) ([]User, error)
 	FindUserByCityId(cityId string) ([]User, error)
 	FindUserByDistrictId(districtId string) ([]User, error)

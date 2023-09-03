@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	view2 "nik-extractor/app/view"
 	"nik-extractor/domain"
+	"nik-extractor/helper"
 	"nik-extractor/user/handler/http/view"
 )
 
@@ -18,15 +19,15 @@ func NewUserHandler(gin *gin.Engine, userUseCase domain.UserUseCase) {
 		userUseCase: userUseCase,
 	}
 
-	gin.POST("/v1/submit-ids", handler.Submit)
-	gin.GET("/v1/users/province/:province_id", handler.FindByProvinceId)
-	gin.GET("/v1/users/city/:city_id", handler.FindByCityId)
-	gin.GET("/v1/users/district/:district_id", handler.FindByDistrictId)
-	gin.GET("/v1/users/year/:year_of_birth", handler.FindByYearOfBirth)
-	gin.GET("/v1/users/gender/:gender", handler.FindByGender)
-	gin.GET("/v1/extract/:id", handler.Extract)
-	gin.POST("/v1/validate", handler.Validate)
-	gin.DELETE("v1/clean-up", handler.CleanUp)
+	gin.POST("/api/v1/submit-ids", handler.Submit)
+	gin.GET("/api/v1/users/province/:province_id", handler.FindByProvinceId)
+	gin.GET("/api/v1/users/city/:city_id", handler.FindByCityId)
+	gin.GET("/api/v1/users/district/:district_id", handler.FindByDistrictId)
+	gin.GET("/api/v1/users/year/:year_of_birth", handler.FindByYearOfBirth)
+	gin.GET("/api/v1/users/gender/:gender", handler.FindByGender)
+	gin.GET("/api/v1/extract/:id", handler.Extract)
+	gin.POST("/api/v1/validate", handler.Validate)
+	gin.DELETE("/api/v1/clean-up", handler.CleanUp)
 }
 
 func (p *UserHandler) Submit(c *gin.Context) {
@@ -44,6 +45,10 @@ func (p *UserHandler) Submit(c *gin.Context) {
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			view2.MakeResponse(c, 404, "Not Found", []domain.User{})
+			return
+		}
+		if errors.Is(err, helper.ErrConflict) {
+			view2.MakeResponse(c, 400, "Id already used", []domain.User{})
 			return
 		}
 		view2.MakeResponse(c, 500, "Internal Server Error", []domain.User{})

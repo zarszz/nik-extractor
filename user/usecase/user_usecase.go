@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"nik-extractor/domain"
+	"nik-extractor/helper"
 	"nik-extractor/user/handler/http/view"
 	"strconv"
 	"time"
@@ -235,9 +236,17 @@ func NewUserUseCase(repo domain.UserRepository, provinceRepo domain.ProvinceRepo
 func (p UserUseCase) Submit(users []view.SubmitUserView) error {
 	var submitUser []domain.User
 	for _, user := range users {
+		existingUser, err := p.repo.FindById(user.Id)
+		if err != nil {
+			return errors.New(fmt.Sprintf("Invalid ID %s", user.Id))
+		}
+
+		if existingUser != nil {
+			return helper.ErrConflict
+		}
 
 		provinceCode := user.Id[:2]
-		_, err := p.provinceRepo.FindById(provinceCode)
+		_, err = p.provinceRepo.FindById(provinceCode)
 		if err != nil {
 			return errors.New(fmt.Sprintf("Invalid ID %s", user.Id))
 		}
@@ -266,7 +275,7 @@ func (p UserUseCase) Submit(users []view.SubmitUserView) error {
 	return nil
 }
 
-func (p UserUseCase) FindById(id string) (domain.User, error) {
+func (p UserUseCase) FindById(id string) (*domain.User, error) {
 	return p.repo.FindById(id)
 }
 

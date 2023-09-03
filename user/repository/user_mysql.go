@@ -90,13 +90,13 @@ func NewUserRepository(db *sql.DB) domain.UserRepository {
 	return &UserMysqlRepository{db: db}
 }
 
-func (p UserMysqlRepository) FindById(id string) (domain.User, error) {
-	var province domain.User
-	err := p.db.QueryRow("SELECT id, name FROM provinces WHERE id = ?", id).Scan(&province.Id, &province.Name)
+func (p UserMysqlRepository) FindById(id string) (*domain.User, error) {
+	var user domain.User
+	err := p.db.QueryRow("SELECT id, name FROM users WHERE id = ?", id).Scan(&user.Id, &user.Name)
 	if err != nil {
-		return province, err
+		return nil, err
 	}
-	return province, nil
+	return &user, nil
 }
 
 func (p UserMysqlRepository) Submit(users []domain.User) error {
@@ -143,9 +143,9 @@ func (p UserMysqlRepository) SubmitWithTx(tx *sql.Tx, user domain.User) error {
 	return nil
 }
 
-func (p UserMysqlRepository) FindUserByProvinceId(provinceId string) ([]domain.User, error) {
+func (p UserMysqlRepository) FindUserByProvinceId(userId string) ([]domain.User, error) {
 	var users []domain.User
-	stmt, _ := p.db.Query("SELECT id, name FROM users WHERE SUBSTRING(id, 1, 2) = ?", provinceId)
+	stmt, _ := p.db.Query("SELECT id, name FROM users WHERE SUBSTRING(id, 1, 2) = ?", userId)
 	for stmt.Next() {
 		var user domain.User
 		err := stmt.Scan(&user.Id, &user.Name)
