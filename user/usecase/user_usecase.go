@@ -17,6 +17,10 @@ type UserUseCase struct {
 	villageRepo  domain.VillageRepository
 }
 
+func (p UserUseCase) CleanUp() error {
+	return p.repo.CleanUp()
+}
+
 func (p UserUseCase) Validate(validateUserDataView []view.ValidateUserDataView) (bool, []view.ValidateUserDataErrorView) {
 	var errorViews []view.ValidateUserDataErrorView
 
@@ -24,10 +28,10 @@ func (p UserUseCase) Validate(validateUserDataView []view.ValidateUserDataView) 
 		var mismatchedData []string
 		extractedMetaData, err := p.Extract(data.Id)
 		if err != nil {
-			if err.Error() != "" {
+			if len(err) != 0 {
 				errorViews = append(errorViews, view.ValidateUserDataErrorView{
 					Id:     data.Id,
-					Errors: []string{err.Error()},
+					Errors: err,
 				})
 				continue
 			}
@@ -92,14 +96,14 @@ func CalculateYearOfBirth(twoDigitsOfBirth string) (string, error) {
 	return strconv.Itoa(fullYear), nil
 }
 
-func (p UserUseCase) Extract(id string) (*view.ExtractUserIdView, error) {
+func (p UserUseCase) Extract(id string) (*view.ExtractUserIdView, []string) {
 	var extractUserIdView view.ExtractUserIdView
-	var errorString string
+	var mismatches []string
 
 	provinceCode := id[:2]
 	province, err := p.provinceRepo.FindById(provinceCode)
 	if err != nil {
-		errorString += "invalid province id,"
+		mismatches = append(mismatches, "invalid province id")
 	} else {
 		extractUserIdView.Province = province.Name
 	}
@@ -107,7 +111,7 @@ func (p UserUseCase) Extract(id string) (*view.ExtractUserIdView, error) {
 	cityCode := fmt.Sprintf("%s%s", provinceCode, id[2:4])
 	city, err := p.cityRepo.FindById(cityCode)
 	if err != nil {
-		errorString += "invalid city id,"
+		mismatches = append(mismatches, "invalid city id")
 	} else {
 		extractUserIdView.City = city.Name
 	}
@@ -115,7 +119,7 @@ func (p UserUseCase) Extract(id string) (*view.ExtractUserIdView, error) {
 	districtCode := fmt.Sprintf("%s%s", cityCode, id[4:6])
 	district, err := p.districtRepo.FindById(districtCode)
 	if err != nil {
-		errorString += "invalid district id,"
+		mismatches = append(mismatches, "invalid district id")
 	} else {
 		extractUserIdView.District = district.Name
 	}
@@ -123,7 +127,7 @@ func (p UserUseCase) Extract(id string) (*view.ExtractUserIdView, error) {
 	var intDateOfBirth, intMonthOfBirth int
 	dateOfBirth := id[6:8]
 	if len(dateOfBirth) != 2 {
-		errorString += "invalid date of birth,"
+		mismatches = append(mismatches, "invalid date of birth")
 	} else {
 		if dateOfBirth[0] == '0' {
 			intDateOfBirth, _ = strconv.Atoi(dateOfBirth[1:])
@@ -137,7 +141,7 @@ func (p UserUseCase) Extract(id string) (*view.ExtractUserIdView, error) {
 	}
 
 	if (intDateOfBirth < 1) || (intDateOfBirth > 31) {
-		errorString += "invalid date of birth,"
+		mismatches = append(mismatches, "invalid date of birth")
 	}
 
 	if intDateOfBirth < 10 {
@@ -148,7 +152,7 @@ func (p UserUseCase) Extract(id string) (*view.ExtractUserIdView, error) {
 
 	monthOfBirth := id[8:10]
 	if len(monthOfBirth) != 2 {
-		errorString += "invalid month of birth,"
+		mismatches = append(mismatches, "invalid month of birth")
 	} else {
 		if monthOfBirth[0] == '0' {
 			intMonthOfBirth, _ = strconv.Atoi(monthOfBirth[1:])
@@ -158,7 +162,7 @@ func (p UserUseCase) Extract(id string) (*view.ExtractUserIdView, error) {
 	}
 
 	if (intMonthOfBirth < 1) || (intMonthOfBirth > 12) {
-		errorString += "invalid month of birth,"
+		mismatches = append(mismatches, "invalid month of birth")
 	}
 
 	if intMonthOfBirth < 10 {
@@ -168,7 +172,7 @@ func (p UserUseCase) Extract(id string) (*view.ExtractUserIdView, error) {
 	lastTwoDigitYearOfBirth := id[10:12]
 	yearOfBirth, err := CalculateYearOfBirth(lastTwoDigitYearOfBirth)
 	if err != nil {
-		errorString += "invalid year of birth,"
+		mismatches = append(mismatches, "invalid year of birth")
 	}
 	extractUserIdView.Dob = fmt.Sprintf("%s-%s-%s", dateOfBirth, monthOfBirth, yearOfBirth)
 
@@ -178,7 +182,7 @@ func (p UserUseCase) Extract(id string) (*view.ExtractUserIdView, error) {
 		extractUserIdView.Gender = "f"
 	}
 	extractUserIdView.Id = id
-	return &extractUserIdView, errors.New(errorString)
+	return &extractUserIdView, mismatches
 }
 
 func (p UserUseCase) FindUserByYearOfBirth(yearOfBirth string) ([]domain.User, error) {
@@ -206,6 +210,10 @@ func (p UserUseCase) FindUserByDistrictId(districtId string) ([]domain.User, err
 }
 
 func (p UserUseCase) FindUserByCityId(cityId string) ([]domain.User, error) {
+	_, err := p.cityRepo.FindById(cityId)
+	if err != nil {
+		return nil, err
+	}
 	users, err := p.repo.FindUserByCityId(cityId)
 	if err != nil {
 		return nil, err
@@ -246,11 +254,10 @@ func (p UserUseCase) Submit(users []view.SubmitUserView) error {
 			Id:   user.Id,
 			Name: user.Name,
 		})
-
-		err = p.repo.Submit(submitUser)
-		if err != nil {
-			return errors.New(fmt.Sprintf("Invalid ID %s", user.Id))
-		}
+	}
+	err := p.repo.Submit(submitUser)
+	if err != nil {
+		return errors.New(fmt.Sprintf("Invalid ID %s", err.Error()))
 	}
 	return nil
 }

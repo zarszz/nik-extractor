@@ -1,7 +1,10 @@
 package http
 
 import (
+	"database/sql"
+	"errors"
 	"github.com/gin-gonic/gin"
+	view2 "nik-extractor/app/view"
 	"nik-extractor/domain"
 	"nik-extractor/user/handler/http/view"
 )
@@ -23,14 +26,15 @@ func NewUserHandler(gin *gin.Engine, userUseCase domain.UserUseCase) {
 	gin.GET("/v1/users/gender/:gender", handler.FindByGender)
 	gin.GET("/v1/extract/:id", handler.Extract)
 	gin.POST("/v1/validate", handler.Validate)
+	gin.DELETE("v1/clean-up", handler.CleanUp)
 }
 
 func (p *UserHandler) Submit(c *gin.Context) {
 	var submitUserView []view.SubmitUserView
 
 	if err := c.ShouldBindJSON(&submitUserView); err != nil {
-		c.JSON(400, gin.H{
-			"message": "Invalid request body",
+		view2.MakeResponse(c, 400, "Internal Server Error", gin.H{
+			"error": err.Error(),
 		})
 		return
 	}
@@ -38,15 +42,14 @@ func (p *UserHandler) Submit(c *gin.Context) {
 	err := p.userUseCase.Submit(submitUserView)
 
 	if err != nil {
-		c.JSON(500, gin.H{
-			"message": err.Error(),
-		})
+		if errors.Is(err, sql.ErrNoRows) {
+			view2.MakeResponse(c, 404, "Not Found", []domain.User{})
+		}
+		view2.MakeResponse(c, 500, "Internal Server Error", []domain.User{})
 		return
 	}
 
-	c.JSON(200, gin.H{
-		"message": "Success",
-	})
+	view2.MakeResponse(c, 200, "Success", []domain.User{})
 }
 
 func (p *UserHandler) FindByProvinceId(c *gin.Context) {
@@ -54,13 +57,14 @@ func (p *UserHandler) FindByProvinceId(c *gin.Context) {
 
 	users, err := p.userUseCase.FindUserByProvinceId(provinceId)
 	if err != nil {
-		c.JSON(500, gin.H{
-			"message": err.Error(),
-		})
+		if errors.Is(err, sql.ErrNoRows) {
+			view2.MakeResponse(c, 404, "Not Found", []domain.User{})
+		}
+		view2.MakeResponse(c, 500, "Internal Server Error", []domain.User{})
 		return
 	}
 
-	c.JSON(200, users)
+	view2.MakeResponse(c, 200, "Success", users)
 }
 
 func (p *UserHandler) FindByCityId(c *gin.Context) {
@@ -68,9 +72,10 @@ func (p *UserHandler) FindByCityId(c *gin.Context) {
 
 	users, err := p.userUseCase.FindUserByCityId(cityId)
 	if err != nil {
-		c.JSON(500, gin.H{
-			"message": err.Error(),
-		})
+		if errors.Is(err, sql.ErrNoRows) {
+			view2.MakeResponse(c, 404, "Not Found", []domain.User{})
+		}
+		view2.MakeResponse(c, 500, "Internal Server Error", []domain.User{})
 		return
 	}
 
@@ -82,13 +87,13 @@ func (p *UserHandler) FindByDistrictId(c *gin.Context) {
 
 	users, err := p.userUseCase.FindUserByDistrictId(districtId)
 	if err != nil {
-		c.JSON(500, gin.H{
-			"message": err.Error(),
-		})
+		if errors.Is(err, sql.ErrNoRows) {
+			view2.MakeResponse(c, 404, "Not Found", []domain.User{})
+		}
+		view2.MakeResponse(c, 500, "Internal Server Error", []domain.User{})
 		return
 	}
-
-	c.JSON(200, users)
+	view2.MakeResponse(c, 200, "Success", users)
 }
 
 func (p *UserHandler) FindByYearOfBirth(c *gin.Context) {
@@ -96,9 +101,10 @@ func (p *UserHandler) FindByYearOfBirth(c *gin.Context) {
 
 	users, err := p.userUseCase.FindUserByYearOfBirth(yearOfBirth)
 	if err != nil {
-		c.JSON(500, gin.H{
-			"message": err.Error(),
-		})
+		if errors.Is(err, sql.ErrNoRows) {
+			view2.MakeResponse(c, 404, "Not Found", []domain.User{})
+		}
+		view2.MakeResponse(c, 500, err.Error(), []domain.User{})
 		return
 	}
 
@@ -110,9 +116,10 @@ func (p *UserHandler) FindByGender(c *gin.Context) {
 
 	users, err := p.userUseCase.FindUserByGender(gender)
 	if err != nil {
-		c.JSON(500, gin.H{
-			"message": err.Error(),
-		})
+		if errors.Is(err, sql.ErrNoRows) {
+			view2.MakeResponse(c, 404, "Not Found", []domain.User{})
+		}
+		view2.MakeResponse(c, 500, err.Error(), []domain.User{})
 		return
 	}
 
@@ -121,30 +128,37 @@ func (p *UserHandler) FindByGender(c *gin.Context) {
 
 func (p *UserHandler) Extract(context *gin.Context) {
 	extractedUserIdView, err := p.userUseCase.Extract(context.Param("id"))
-	if err.Error() != "" {
-		context.JSON(400, gin.H{
-			"message": err.Error(),
-		})
+	if len(err) > 0 {
+		view2.MakeResponse(context, 400, "Bad Request", err)
 		return
 	}
 
-	context.JSON(200, extractedUserIdView)
+	view2.MakeResponse(context, 200, "Success", extractedUserIdView)
 }
 
 func (p *UserHandler) Validate(context *gin.Context) {
 	var validateUserDataView []view.ValidateUserDataView
 
 	if err := context.ShouldBindJSON(&validateUserDataView); err != nil {
-		context.JSON(400, gin.H{
-			"message": "Invalid request body",
+		view2.MakeResponse(context, 400, "Bad Request", gin.H{
+			"error": err.Error(),
 		})
 		return
 	}
 
 	isContainError, errorViews := p.userUseCase.Validate(validateUserDataView)
-	if isContainError {
-		context.JSON(400, errorViews)
+	if !isContainError {
+		view2.MakeResponse(context, 400, "Bad Request", errorViews)
 		return
 	}
-	context.JSON(200, gin.H{"data": errorViews})
+	view2.MakeResponse(context, 200, "Success", []domain.User{})
+}
+
+func (p *UserHandler) CleanUp(context *gin.Context) {
+	err := p.userUseCase.CleanUp()
+	if err != nil {
+		view2.MakeResponse(context, 500, "Internal Server Error", []domain.User{})
+		return
+	}
+	view2.MakeResponse(context, 200, "Success", []domain.User{})
 }

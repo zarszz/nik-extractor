@@ -9,6 +9,21 @@ type UserMysqlRepository struct {
 	db *sql.DB
 }
 
+// CleanUp Only for testing purpose
+func (p UserMysqlRepository) CleanUp() error {
+	stmt, err := p.db.Prepare("DELETE FROM users WHERE TRUE")
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.Exec()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (p UserMysqlRepository) FindUserByYearOfBirth(yearOfBirth string) ([]domain.User, error) {
 	var users []domain.User
 	stmt, _ := p.db.Query("SELECT id, name FROM users WHERE SUBSTRING(id, 11, 2) = ?", yearOfBirth)
@@ -45,7 +60,7 @@ func (p UserMysqlRepository) FindUserByGender(gender string) ([]domain.User, err
 
 func (p UserMysqlRepository) FindUserByDistrictId(districtId string) ([]domain.User, error) {
 	var users []domain.User
-	stmt, _ := p.db.Query("SELECT id, name FROM users WHERE SUBSTRING(id, 5, 2) = ?", districtId)
+	stmt, _ := p.db.Query("SELECT id, name FROM users WHERE SUBSTRING(id, 1, 6) = ?", districtId)
 	for stmt.Next() {
 		var user domain.User
 		err := stmt.Scan(&user.Id, &user.Name)
@@ -59,7 +74,7 @@ func (p UserMysqlRepository) FindUserByDistrictId(districtId string) ([]domain.U
 
 func (p UserMysqlRepository) FindUserByCityId(cityId string) ([]domain.User, error) {
 	var users []domain.User
-	stmt, _ := p.db.Query("SELECT id, name FROM users WHERE SUBSTRING(id, 3, 2) = ?", cityId)
+	stmt, _ := p.db.Query("SELECT id, name FROM users WHERE SUBSTRING(id, 1, 4) = ?", cityId)
 	for stmt.Next() {
 		var user domain.User
 		err := stmt.Scan(&user.Id, &user.Name)
