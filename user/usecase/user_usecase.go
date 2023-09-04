@@ -18,6 +18,13 @@ type UserUseCase struct {
 	villageRepo  domain.VillageRepository
 }
 
+func NewUserUseCase(repo domain.UserRepository, provinceRepo domain.ProvinceRepository,
+	cityRepo domain.CityRepository,
+	districtRepo domain.DistrictRepository) domain.UserUseCase {
+
+	return &UserUseCase{repo: repo, provinceRepo: provinceRepo, cityRepo: cityRepo, districtRepo: districtRepo}
+}
+
 func (p UserUseCase) CleanUp() error {
 	return p.repo.CleanUp()
 }
@@ -224,13 +231,6 @@ func (p UserUseCase) FindUserByCityId(cityId string) ([]domain.User, error) {
 		return nil, err
 	}
 	return users, nil
-}
-
-func NewUserUseCase(repo domain.UserRepository, provinceRepo domain.ProvinceRepository,
-	cityRepo domain.CityRepository,
-	districtRepo domain.DistrictRepository) domain.UserUseCase {
-
-	return &UserUseCase{repo: repo, provinceRepo: provinceRepo, cityRepo: cityRepo, districtRepo: districtRepo}
 }
 
 func (p UserUseCase) Submit(users []view.SubmitUserView) error {

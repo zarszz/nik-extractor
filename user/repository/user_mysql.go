@@ -9,6 +9,10 @@ type UserMysqlRepository struct {
 	db *sql.DB
 }
 
+func NewUserRepository(db *sql.DB) domain.UserRepository {
+	return &UserMysqlRepository{db: db}
+}
+
 // CleanUp Only for testing purpose
 func (p UserMysqlRepository) CleanUp() error {
 	stmt, err := p.db.Prepare("DELETE FROM users WHERE TRUE")
@@ -84,10 +88,6 @@ func (p UserMysqlRepository) FindUserByCityId(cityId string) ([]domain.User, err
 		users = append(users, user)
 	}
 	return users, nil
-}
-
-func NewUserRepository(db *sql.DB) domain.UserRepository {
-	return &UserMysqlRepository{db: db}
 }
 
 func (p UserMysqlRepository) FindById(id string) (*domain.User, error) {
