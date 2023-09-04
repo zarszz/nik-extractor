@@ -237,7 +237,7 @@ func (p UserUseCase) Submit(users []view.SubmitUserView) error {
 	var submitUser []domain.User
 	for _, user := range users {
 		existingUser, err := p.repo.FindById(user.Id)
-		if err != nil {
+		if existingUser != nil {
 			return errors.New(fmt.Sprintf("Invalid ID %s", user.Id))
 		}
 
