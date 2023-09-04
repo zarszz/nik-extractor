@@ -5,9 +5,12 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"log"
 	_cityRepository "nik-extractor/city/repository"
 	_districtRepository "nik-extractor/district/repository"
+	"nik-extractor/docs"
 	_provinceRepository "nik-extractor/province/repository"
 	_userRepository "nik-extractor/user/repository"
 	_userUseCase "nik-extractor/user/usecase"
@@ -42,6 +45,12 @@ func main() {
 	}(db)
 
 	r := gin.Default()
+	docs.SwaggerInfo.Title = "NIK Extractor API"
+	docs.SwaggerInfo.Description = "NIK Extractor API"
+	docs.SwaggerInfo.Version = "1.0"
+	docs.SwaggerInfo.Host = "localhost"
+	docs.SwaggerInfo.BasePath = "/api/v1"
+	docs.SwaggerInfo.Schemes = []string{"http", "https"}
 
 	cityRepo := _cityRepository.NewCityRepository(db)
 	provinceRepo := _provinceRepository.NewProvinceRepository(db)
@@ -50,6 +59,7 @@ func main() {
 	userUseCase := _userUseCase.NewUserUseCase(userRepo, provinceRepo, cityRepo, districtRepo)
 	_userHandler.NewUserHandler(r, userUseCase)
 
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	err = r.Run(":8080")
 	if err != nil {
 		log.Fatalf("Failed to run the server: %v", err)

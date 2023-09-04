@@ -30,7 +30,7 @@ type UserUseCase interface {
 	FindUserByYearOfBirth(yearOfBirth string) ([]User, error)
 	FindUserByGender(gender string) ([]User, error)
 	Submit(users []view.SubmitUserView) error
-	Extract(id string) (*view.ExtractUserIdView, []string)
-	Validate(view []view.ValidateUserDataViewResponse) (bool, []view.ValidateUserDataErrorViewResponse)
+	Extract(id string) (*view.ExtractUserIdViewResponse, []string)
+	Validate(view []view.ValidateUserDataView) (bool, []view.ValidateUserDataErrorViewResponse)
 	CleanUp() error
 }

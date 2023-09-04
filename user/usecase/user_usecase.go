@@ -22,7 +22,7 @@ func (p UserUseCase) CleanUp() error {
 	return p.repo.CleanUp()
 }
 
-func (p UserUseCase) Validate(validateUserDataView []view.ValidateUserDataViewResponse) (bool, []view.ValidateUserDataErrorViewResponse) {
+func (p UserUseCase) Validate(validateUserDataView []view.ValidateUserDataView) (bool, []view.ValidateUserDataErrorViewResponse) {
 	var errorViews []view.ValidateUserDataErrorViewResponse
 
 	for _, data := range validateUserDataView {
@@ -97,8 +97,8 @@ func CalculateYearOfBirth(twoDigitsOfBirth string) (string, error) {
 	return strconv.Itoa(fullYear), nil
 }
 
-func (p UserUseCase) Extract(id string) (*view.ExtractUserIdView, []string) {
-	var extractUserIdView view.ExtractUserIdView
+func (p UserUseCase) Extract(id string) (*view.ExtractUserIdViewResponse, []string) {
+	var extractUserIdView view.ExtractUserIdViewResponse
 	var mismatches []string
 
 	provinceCode := id[:2]

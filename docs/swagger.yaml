@@ -1,0 +1,295 @@
+definitions:
+  view.Response:
+    properties:
+      data: {}
+      message:
+        type: string
+      status:
+        type: integer
+    type: object
+  view.SubmitUserView:
+    description: with id and name with user id and username
+    properties:
+      id:
+        maxLength: 16
+        minLength: 16
+        type: string
+      name:
+        type: string
+    required:
+    - id
+    - name
+    type: object
+  view.ValidateUserDataView:
+    description: required for extract and validate user data
+    properties:
+      city:
+        type: string
+      district:
+        type: string
+      dob:
+        type: string
+      gender:
+        type: string
+      id:
+        maxLength: 16
+        minLength: 16
+        type: string
+      province:
+        type: string
+    required:
+    - city
+    - district
+    - dob
+    - gender
+    - id
+    - province
+    type: object
+info:
+  contact: {}
+paths:
+  /clean-up:
+    post:
+      consumes:
+      - application/json
+      description: CleanUp all data inside db - for test only
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/view.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/view.Response'
+      summary: CleanUp all data inside db - for test only
+      tags:
+      - misc
+  /extract/:id:
+    get:
+      consumes:
+      - application/json
+      description: Extract a data from id with data from database
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/view.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/view.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/view.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/view.Response'
+      summary: Extract a data from id with data from database
+      tags:
+      - users
+  /submit-ids:
+    post:
+      consumes:
+      - application/json
+      description: Submit list of ID to database
+      parameters:
+      - description: query params
+        in: body
+        name: request
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/view.SubmitUserView'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/view.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/view.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/view.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/view.Response'
+      summary: Submit list of ID to database
+      tags:
+      - users
+  /users/:id:
+    get:
+      consumes:
+      - application/json
+      description: Extract a data from id with data from database
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/view.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/view.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/view.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/view.Response'
+      summary: Extract a data from id with data from database
+      tags:
+      - users
+  /users/city/:city_id:
+    get:
+      consumes:
+      - application/json
+      description: get all users by their city id
+      parameters:
+      - description: City ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/view.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/view.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/view.Response'
+      summary: get all users by their city id
+      tags:
+      - users
+  /users/district/:district_id:
+    get:
+      consumes:
+      - application/json
+      description: get all users by their district id
+      parameters:
+      - description: District ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/view.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/view.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/view.Response'
+      summary: get all users by their district id
+      tags:
+      - users
+  /users/province/:province_id:
+    get:
+      consumes:
+      - application/json
+      description: get all users by their province id
+      parameters:
+      - description: Province ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/view.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/view.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/view.Response'
+      summary: get all users by their province id
+      tags:
+      - users
+  /validate:
+    post:
+      consumes:
+      - application/json
+      description: Validate list of id with data to database
+      parameters:
+      - description: query params
+        in: body
+        name: request
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/view.ValidateUserDataView'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/view.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/view.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/view.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/view.Response'
+      summary: Validate list of id with data to database
+      tags:
+      - users
+swagger: "2.0"
